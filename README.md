@@ -8,6 +8,8 @@ A simple and intuitive grocery list application built with React Native and Expo
 - ✅ Mark items as completed by tapping them
 - ✅ Delete items from the list
 - ✅ View summary of total and completed items
+- ✅ **Data persistence with SQLite database**
+- ✅ **Automatic data backup across app sessions**
 - ✅ Clean, modern UI design
 - ✅ Cross-platform (iOS, Android, Web)
 
@@ -80,18 +82,25 @@ Then scan the QR code with the Expo Go app on your mobile device.
 
 - **React Native**: Cross-platform mobile development framework
 - **Expo**: Development platform for React Native apps
-- **React Hooks**: For state management (useState)
+- **expo-sqlite**: SQLite database for local data persistence
+- **React Hooks**: For state management (useState, useEffect)
 - **React Native Components**: SafeAreaView, FlatList, TextInput, TouchableOpacity
 
 ## Development Notes
 
-This is a frontend-only implementation focused on UI and user interaction. The app currently:
-- Stores data in memory (resets when app restarts)
-- Does not persist data to a database
-- Does not require authentication
-- Does not sync across devices
+This app now uses SQLite for data persistence:
+- Data is automatically saved to a local SQLite database
+- Data persists between app sessions and device restarts  
+- Database is created automatically on first app launch
+- All grocery items are stored locally on the device
 
-Future enhancements could include data persistence, cloud sync, and user accounts.
+Technical details:
+- Uses `expo-sqlite` for database operations
+- Database file: `grocery_list.db`
+- Table: `grocery_items` with columns: id, name, completed, created_at
+- Supports iOS, Android, and Web platforms
+
+Future enhancements could include cloud sync and user accounts.
 
 ## Contributing
 

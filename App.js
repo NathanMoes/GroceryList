@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,35 +10,71 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
+import { initializeDatabase, getAllItems, addItem as dbAddItem, toggleItemCompletion, deleteItem as dbDeleteItem } from './database';
 
 export default function App() {
   const [groceryItem, setGroceryItem] = useState('');
   const [groceryList, setGroceryList] = useState([]);
 
-  const addItem = () => {
+  // Initialize database and load items on app start
+  useEffect(() => {
+    const initApp = async () => {
+      try {
+        // Initialize database schema
+        await initializeDatabase();
+        
+        // Load existing items from database
+        const items = await getAllItems();
+        setGroceryList(items);
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        Alert.alert('Database Error', 'Failed to initialize database');
+      }
+    };
+    
+    initApp();
+  }, []);
+
+  const addItem = async () => {
     if (groceryItem.trim() === '') {
       Alert.alert('Error', 'Please enter a grocery item');
       return;
     }
     
-    const newItem = {
-      id: Date.now().toString(),
-      name: groceryItem.trim(),
-      completed: false,
-    };
-    
-    setGroceryList([...groceryList, newItem]);
-    setGroceryItem('');
+    try {
+      const newItem = await dbAddItem(groceryItem);
+      setGroceryList(prevList => [newItem, ...prevList]);
+      setGroceryItem('');
+    } catch (error) {
+      console.error('Error adding item:', error);
+      Alert.alert('Error', 'Failed to add item');
+    }
   };
 
-  const toggleItem = (id) => {
-    setGroceryList(groceryList.map(item =>
-      item.id === id ? { ...item, completed: !item.completed } : item
-    ));
+  const toggleItem = async (id) => {
+    try {
+      const updatedItem = await toggleItemCompletion(id);
+      if (updatedItem) {
+        setGroceryList(prevList => 
+          prevList.map(item => 
+            item.id === id ? updatedItem : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling item:', error);
+      Alert.alert('Error', 'Failed to update item');
+    }
   };
 
-  const deleteItem = (id) => {
-    setGroceryList(groceryList.filter(item => item.id !== id));
+  const deleteItem = async (id) => {
+    try {
+      await dbDeleteItem(id);
+      setGroceryList(prevList => prevList.filter(item => item.id !== id));
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      Alert.alert('Error', 'Failed to delete item');
+    }
   };
 
   const renderItem = ({ item }) => (
